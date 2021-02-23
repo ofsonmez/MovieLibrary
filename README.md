@@ -6,5 +6,5 @@ This is a web API for my new Movie Library Project. For now this library contain
 - Unit Of Work Pattern
 - Entity Framework
 - DbContext
-- Mssql
+- Mssql -*Code First*-
 - Swagger Implementation
