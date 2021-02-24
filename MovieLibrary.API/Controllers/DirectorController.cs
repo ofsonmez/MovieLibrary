@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using MovieLibrary.API.DTO;
+using MovieLibrary.API.Validators;
 using MovieLibrary.Core.Models;
 using MovieLibrary.Core.Services;
 
@@ -58,6 +59,28 @@ namespace MovieLibrary.API.Controllers
             await _directorService.DeleteDirector(director);
 
             return NoContent();
+        }
+
+        [HttpPost("")]
+        public async Task<ActionResult<DirectorDTO>> CreateDirector([FromBody] SaveDirectorDTO saveDirectorDto)
+        {
+            var validator = new SaveDirectorResourceValidator();
+            var validatorResult = await validator.ValidateAsync(saveDirectorDto);
+
+            if (!validatorResult.IsValid)
+            {
+                return BadRequest(validatorResult.Errors);
+            }
+
+            var directorToCreate = _mapper.Map<SaveDirectorDTO, Director>(saveDirectorDto);
+
+            var newDirector = await _directorService.CreateDirector(directorToCreate);
+
+            var director = await _directorService.GetDirectorById(newDirector.Id);
+
+            var directorResource = _mapper.Map<Director, DirectorDTO>(director);
+
+            return Ok(directorResource);
         }
     }
 }
