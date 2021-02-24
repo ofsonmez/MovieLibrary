@@ -62,17 +62,15 @@ namespace MovieLibrary.API.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<DirectorDTO>> CreateDirector([FromBody] SaveDirectorDTO saveDirectorDto)
+        public async Task<ActionResult<DirectorDTO>> CreateArtist([FromBody] SaveDirectorDTO saveDirectorResource)
         {
             var validator = new SaveDirectorResourceValidator();
-            var validatorResult = await validator.ValidateAsync(saveDirectorDto);
+            var validationResult = await validator.ValidateAsync(saveDirectorResource);
 
-            if (!validatorResult.IsValid)
-            {
-                return BadRequest(validatorResult.Errors);
-            }
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors);
 
-            var directorToCreate = _mapper.Map<SaveDirectorDTO, Director>(saveDirectorDto);
+            var directorToCreate = _mapper.Map<SaveDirectorDTO, Director>(saveDirectorResource);
 
             var newDirector = await _directorService.CreateDirector(directorToCreate);
 
@@ -81,6 +79,36 @@ namespace MovieLibrary.API.Controllers
             var directorResource = _mapper.Map<Director, DirectorDTO>(director);
 
             return Ok(directorResource);
+        }
+        
+        [HttpPut("{id}")]
+        public async Task<ActionResult<DirectorDTO>> UpdateMovie(int id, [FromBody] SaveDirectorDTO saveDirectorResource)
+        {
+            var validator = new SaveDirectorResourceValidator();
+            var validatorResult = await validator.ValidateAsync(saveDirectorResource);
+
+            var requestIsInvalid = id == 0 || !validatorResult.IsValid;
+
+            if (requestIsInvalid)
+            {
+                return BadRequest(validatorResult.Errors);
+            }
+
+            var directorToBeUpdated = await _directorService.GetDirectorById(id);
+
+            if (directorToBeUpdated == null)
+            {
+                return NotFound();
+            }
+
+            var director = _mapper.Map<SaveDirectorDTO, Director>(saveDirectorResource);
+
+            await _directorService.UpdateDirector(directorToBeUpdated, director);
+
+            var updatedDirector = await _directorService.GetDirectorById(id);
+            var updatedDirectorResource = _mapper.Map<Director, DirectorDTO>(updatedDirector);
+
+            return Ok(updatedDirectorResource);
         }
     }
 }

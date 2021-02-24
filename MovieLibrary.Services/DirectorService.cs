@@ -28,6 +28,7 @@ namespace MovieLibrary.Services
         public async Task<Director> CreateDirector(Director newDirector)
         {
             await _unitOfWork.Directors.AddAsync(newDirector);
+            await _unitOfWork.CommitAsync();
             return newDirector;
         }
 
